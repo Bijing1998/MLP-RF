@@ -1,31 +1,31 @@
 clc;clear;close all;	
 load('R_27_Jan_2024_20_53_18.mat')	
 	
-data_str=G_out_data.data_path_str ;  %读取数据的路径 	
-dataO=readtable(data_str,'VariableNamingRule','preserve'); %读取数据 	
+data_str=G_out_data.data_path_str ;  	
+dataO=readtable(data_str,'VariableNamingRule','preserve');
 data1=dataO(:,2:end);test_data=table2cell(dataO(1,2:end));	
 for i=1:length(test_data)	
       if ischar(test_data{1,i})==1	
-          index_la(i)=1;     %char类型	
+          index_la(i)=1;    
       elseif isnumeric(test_data{1,i})==1	
-          index_la(i)=2;     %double类型	
+          index_la(i)=2;    	
       else	
-        index_la(i)=0;     %其他类型	
+        index_la(i)=0;  
     end 	
 end	
 index_char=find(index_la==1);index_double=find(index_la==2);	
- %% 数值类型数据处理	
+	
  if length(index_double)>=1	
     data_numshuju=table2array(data1(:,index_double));	
     index_double1=index_double;	
 	
     index_double1_index=1:size(data_numshuju,2);	
-    data_NAN=(isnan(data_numshuju));    %找列的缺失值	
+    data_NAN=(isnan(data_numshuju));    
     num_NAN_ROW=sum(data_NAN);	
     index_NAN=num_NAN_ROW>round(0.2*size(data1,1));	
     index_double1(index_NAN==1)=[]; index_double1_index(index_NAN==1)=[];	
     data_numshuju1=data_numshuju(:,index_double1_index);	
-    data_NAN1=(isnan(data_numshuju1));  %找行的缺失值	
+    data_NAN1=(isnan(data_numshuju1));  
      num_NAN__COL=sum(data_NAN1');	
      index_NAN1=num_NAN__COL>0;	
      index_double2_index=1:size(data_numshuju,1);	
@@ -36,7 +36,7 @@ index_char=find(index_la==1);index_double=find(index_la==2);
    index_need_last=[];	
   data_numshuju2=[];	
 end	
-%% 文本类型数据处理	
+	
 	
 data_shuju=[];	
  if length(index_char)>=1	
@@ -56,7 +56,7 @@ if j==length(index_char)
 label_all_last=[index_char,index_need_last];	
 [~,label_max]=max(label_all_last);	
  if(label_max==length(label_all_last))	
-     str_label=0; %标记输出是否字符类型	
+     str_label=0; 
      data_all_last=[data_shuju,data_numshuju2];	
      label_all_last=[index_char,index_need_last];	
  else	
@@ -70,68 +70,45 @@ label_all_last=[index_char,index_need_last];
      data_biao{1,j}=data_biao_all{1,label_all_last(j)};	
    end	
 	
-% 异常值检测	
+
 data=data;	
-	
-%%  特征处理 特征选择或者降维	
-	
+		
   A_data1=data;	
  data_biao1=data_biao;	
- select_feature_num=G_out_data.select_feature_num1;   %特征选择的个数	
+ select_feature_num=G_out_data.select_feature_num1;   
 	
 data_select=A_data1;	
 feature_need_last=1:size(A_data1,2)-1;	
 	
 	
 	
-%% 数据划分	
-  x_feature_label=data_select(:,1:end-1);    %x特征	
-  y_feature_label=data_select(:,end);          %y标签	
+	
+  x_feature_label=data_select(:,1:end-1);   
+  y_feature_label=data_select(:,end);         
  index_label1=1:(size(x_feature_label,1));	
- index_label=G_out_data.spilt_label_data;  % 数据索引	
+ index_label=G_out_data.spilt_label_data;  
  if isempty(index_label)	
      index_label=index_label1;	
  end	
-spilt_ri=G_out_data.spilt_rio;  %划分比例 训练集:验证集:测试集	
-train_num=round(spilt_ri(1)/(sum(spilt_ri))*size(x_feature_label,1));          %训练集个数	
-vaild_num=round((spilt_ri(1)+spilt_ri(2))/(sum(spilt_ri))*size(x_feature_label,1)); %验证集个数	
- %训练集，验证集，测试集	
+spilt_ri=G_out_data.spilt_rio; 
+train_num=round(spilt_ri(1)/(sum(spilt_ri))*size(x_feature_label,1));        
+vaild_num=round((spilt_ri(1)+spilt_ri(2))/(sum(spilt_ri))*size(x_feature_label,1)); 
  train_x_feature_label=x_feature_label(index_label(1:train_num),:);	
  train_y_feature_label=y_feature_label(index_label(1:train_num),:);	
  vaild_x_feature_label=x_feature_label(index_label(train_num+1:vaild_num),:);	
 vaild_y_feature_label=y_feature_label(index_label(train_num+1:vaild_num),:);	
  test_x_feature_label=x_feature_label(index_label(vaild_num+1:end),:);	
  test_y_feature_label=y_feature_label(index_label(vaild_num+1:end),:);	
-%Zscore 标准化	
-%训练集	
+
  x_mu = mean(train_x_feature_label);  x_sig = std(train_x_feature_label); 	
- train_x_feature_label_norm = (train_x_feature_label - x_mu) ./ x_sig;    % 训练数据标准化	
+ train_x_feature_label_norm = (train_x_feature_label - x_mu) ./ x_sig;   	
  y_mu = mean(train_y_feature_label);  y_sig = std(train_y_feature_label); 	
-train_y_feature_label_norm = (train_y_feature_label - y_mu) ./ y_sig;    % 训练数据标准化  	
-%验证集	
- vaild_x_feature_label_norm = (vaild_x_feature_label - x_mu) ./ x_sig;    %验证数据标准化	
- vaild_y_feature_label_norm=(vaild_y_feature_label - y_mu) ./ y_sig;  %验证数据标准化	
-%测试集	
-test_x_feature_label_norm = (test_x_feature_label - x_mu) ./ x_sig;    % 测试数据标准化	
- test_y_feature_label_norm = (test_y_feature_label - y_mu) ./ y_sig;    % 训练数据标准化  	
-	
-%% 参数设置	
-num_pop=G_out_data.num_pop1;   %种群数量	
-num_iter=G_out_data.num_iter1;   %种群迭代数	
-method_mti=G_out_data.method_mti1;   %优化方法	
-BO_iter=G_out_data.BO_iter;   %贝叶斯迭代次数	
-min_batchsize=G_out_data.min_batchsize;   %batchsize	
-max_epoch=G_out_data.max_epoch1;   %maxepoch	
-hidden_size=G_out_data.hidden_size1;   %hidden_size	
-attention_label=G_out_data.attention_label;   %注意力机制标签	
-attention_head=G_out_data.attention_head;   %注意力机制设置	
-	
-	
-	
-%% 算法处理块	
-	
-	
-	
+train_y_feature_label_norm = (train_y_feature_label - y_mu) ./ y_sig;     	
+ vaild_x_feature_label_norm = (vaild_x_feature_label - x_mu) ./ x_sig;   	
+ vaild_y_feature_label_norm=(vaild_y_feature_label - y_mu) ./ y_sig; 	
+test_x_feature_label_norm = (test_x_feature_label - x_mu) ./ x_sig;   
+ test_y_feature_label_norm = (test_y_feature_label - y_mu) ./ y_sig;   	
+
   t1=clock;	
 disp('优化MLP-RF回归')	
  [Model_MLP,fitness] = optimize_fitrMLP(train_x_feature_label_norm,train_y_feature_label_norm,vaild_x_feature_label_norm,vaild_y_feature_label_norm,num_pop,num_iter,method_mti);    	
