@@ -110,7 +110,7 @@ test_x_feature_label_norm = (test_x_feature_label - x_mu) ./ x_sig;
  test_y_feature_label_norm = (test_y_feature_label - y_mu) ./ y_sig;   	
 
   t1=clock;	
-disp('优化MLP-RF回归')	
+disp('MLP-RF')	
  [Model_MLP,fitness] = optimize_fitrMLP(train_x_feature_label_norm,train_y_feature_label_norm,vaild_x_feature_label_norm,vaild_y_feature_label_norm,num_pop,num_iter,method_mti);    	
  [Model_RF,fitness] = optimize_fitrtreebag1(train_x_feature_label_norm,train_y_feature_label_norm,vaild_x_feature_label_norm,vaild_y_feature_label_norm,num_pop,num_iter,method_mti);   	
 	
